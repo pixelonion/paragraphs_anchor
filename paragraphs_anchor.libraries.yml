@@ -1,0 +1,7 @@
+base:
+  version: VERSION
+  js:
+    js/paragraphs-anchor.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings

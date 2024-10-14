@@ -1,0 +1,12 @@
+name: 'paragraphs_anchor'
+type: module
+description: 'Small module to allow admin to add id attribute to each paragraph.'
+core: 8.x
+core_version_requirement: ^8 || ^9 || ^10
+package: 'Pixel Onion'
+# version: 0.2.0
+
+dependencies:
+  - paragraphs
+  - paragraph_blocks
+  - layout_builder_suite

@@ -1,0 +1,145 @@
+<?php
+
+/**
+ * @file
+ * Contains paragraphs_anchor.module.
+ */
+
+use Drupal\node\Entity\Node;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityFormInterface;
+use Drupal\paragraph_blocks\Entity\ParagraphBlocksEntity;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function paragraphs_anchor_entity_base_field_info(EntityTypeInterface $entity_type) {
+  if ($entity_type->id() == 'paragraph') {
+    $fields = [];
+    // Add new column: anchor, to record the id attribute for the paragraph.
+    $fields['anchor'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Paragraph ID'))
+      ->setDescription(t('The id attribute for this paragraph.'))
+      ->setTranslatable(FALSE)
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => -10,
+      ])
+      ->setDisplayConfigurable('form', TRUE);
+
+    return $fields;
+  }
+}
+
+/**
+ * Implements hook_field_widget_form_alter().
+ */
+function paragraphs_anchor_field_widget_form_alter(&$element, FormStateInterface $form_state, $context) {
+  _paragraphs_anchor_process_widget_form($element, $form_state, $context);
+}
+
+/**
+ * Implements hook_field_widget_WIDGET_TYPE_form_alter().
+ */
+function paragraphs_anchor_field_widget_paragraphs_form_alter(&$element, FormStateInterface $form_state, $context) {
+  _paragraphs_anchor_hide_widget_form($element, $form_state, $context);
+}
+
+/**
+ * Implements hook_field_widget_WIDGET_TYPE_form_alter().
+ */
+function paragraphs_anchor_field_widget_entity_reference_paragraphs_form_alter(&$element, FormStateInterface $form_state, $context) {
+  _paragraphs_anchor_hide_widget_form($element, $form_state, $context);
+}
+
+/**
+ * Helper function to hide the anchor base field when paragraph_blocks is not
+ * enabled for the field instance.
+ *
+ * @param array $element
+ *   The field widget form element as constructed by
+ *   \Drupal\Core\Field\WidgetBaseInterface::form().
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ * @param array $context
+ *   An associative array containing the key-value pairs.
+ *
+ * @see hook_field_widget_WIDGET_TYPE_form_alter()
+ */
+function _paragraphs_anchor_hide_widget_form(array &$element, FormStateInterface $form_state, array $context) {
+  $form_object = $form_state->getFormObject();
+  // Hide anchor field when paragraph_blocks settings is not enabled for
+  // the field instance.
+  if ($form_object instanceof EntityFormInterface) {
+    $bundle = $form_object->getEntity()->bundle();
+    $field_config = $context['items']->getFieldDefinition()->getConfig($bundle);
+    if (!$field_config->getThirdPartySetting('paragraph_blocks', 'status', TRUE)) {
+      $element['subform']['anchor']['#access'] = FALSE;
+    }
+  }
+}
+
+/**
+ * Helper function to change the
+ *
+ * @param array $element
+ *   The field widget form element as constructed by
+ *   \Drupal\Core\Field\WidgetBaseInterface::form().
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ * @param array $context
+ *   An associative array containing the key-value pairs.
+ *
+ * @see hook_field_widget_WIDGET_TYPE_form_alter()
+ */
+function _paragraphs_anchor_process_widget_form(array &$element, FormStateInterface $form_state, array $context) {
+  // Proceed when the field is anchor field.
+  if ($context['items']->getName() != 'anchor') return;
+  // Hide the original base field element.
+  $element['value']['#type'] = 'hidden';
+  // Create new machine name element.
+  $element['anchor'] = [
+    '#title' => t('Paragraph ID'),
+    '#description' => t('The id attribute for this paragraph, which can be used as anchor link. Can only contain lowercase letters, numbers, and hyphens.'),
+    '#type' => 'machine_name',
+    '#default_value' => $element['value']['#default_value'],
+    '#machine_name' => [
+      'exists' => 'paragraphs_anchor_id_exists',
+      'replace_pattern' => '[^a-z0-9\-.]+',
+      'replace' => '-',
+    ],
+    '#required' => FALSE,
+    '#weight' => 10,
+  ];
+  // Add js which copies the machine name value to the original base field.
+  $element['#attached']['library'][] = 'paragraphs_anchor/base';
+}
+
+/**
+ * Helper function to check if paragraph id exists in other paragraphs within
+ * the same node.
+ *
+ * @todo Do real dynamic assessment of all the paragraph items referenced in the
+ *   parent entity. Complications may arise when nested paragraphs are allowed.
+ * @param string $value
+ *   Element value.
+ * @param array $element
+ *   Element array.
+ * @param FormStateInterface $form_state
+ *   Form state object.
+ * @return boolean
+ *   Return TRUE when the paragraph id exists in other paragraphs, FALSE otherwise.
+ */
+function paragraphs_anchor_id_exists($value, $element, FormStateInterface $form_state) {
+  return FALSE;
+}
+
+/**
+ * Implements template_preprocess_paragraph().
+ */
+function paragraphs_anchor_preprocess_paragraph(&$variables) {
+  // Add the id attribute.
+  $variables['attributes']['id'] = $variables['paragraph']->anchor->value;
+}
