@@ -34,23 +34,23 @@ function paragraphs_anchor_entity_base_field_info(EntityTypeInterface $entity_ty
 }
 
 /**
- * Implements hook_field_widget_form_alter().
+ * Implements hook_field_widget_single_element_form_alter().
  */
-function paragraphs_anchor_field_widget_form_alter(&$element, FormStateInterface $form_state, $context) {
+function paragraphs_anchor_field_widget_single_element_form_alter(&$element, FormStateInterface $form_state, $context) {
   _paragraphs_anchor_process_widget_form($element, $form_state, $context);
 }
 
 /**
- * Implements hook_field_widget_WIDGET_TYPE_form_alter().
+ * Implements hook_field_widget_single_element_WIDGET_TYPE_form_alter().
  */
-function paragraphs_anchor_field_widget_paragraphs_form_alter(&$element, FormStateInterface $form_state, $context) {
+function paragraphs_anchor_field_widget_single_element_paragraphs_form_alter(&$element, FormStateInterface $form_state, $context) {
   _paragraphs_anchor_hide_widget_form($element, $form_state, $context);
 }
 
 /**
- * Implements hook_field_widget_WIDGET_TYPE_form_alter().
+ * Implements hook_field_widget_single_element_WIDGET_TYPE_form_alter().
  */
-function paragraphs_anchor_field_widget_entity_reference_paragraphs_form_alter(&$element, FormStateInterface $form_state, $context) {
+function paragraphs_anchor_field_widget_single_element_entity_reference_paragraphs_form_alter(&$element, FormStateInterface $form_state, $context) {
   _paragraphs_anchor_hide_widget_form($element, $form_state, $context);
 }
 
