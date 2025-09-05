@@ -102,16 +102,23 @@ function _paragraphs_anchor_process_widget_form(array &$element, FormStateInterf
   // Create new machine name element.
   $element['anchor'] = [
     '#title' => t('Paragraph ID'),
-    '#description' => t('The id attribute for this paragraph, which can be used as anchor link. Can only contain lowercase letters, numbers, and hyphens.'),
+    '#description' => t('The id attribute for this paragraph, which can be used as anchor link. Can only contain lowercase letters, numbers, and hyphens. Must start with a lowercase letter.'),
     '#type' => 'machine_name',
     '#default_value' => $element['value']['#default_value'],
     '#machine_name' => [
       'exists' => 'paragraphs_anchor_id_exists',
+      // To further investigate how this works, especially with the prohibited
+      // characters, and also the wildcard dot (.) .
       'replace_pattern' => '[^a-z0-9\-.]+',
       'replace' => '-',
     ],
     '#required' => FALSE,
     '#weight' => 10,
+    '#attributes' => [
+      // Add HTML5 client-side validation to reduce the error rate. Consider
+      // having the same pattern as the #machine_name replace_pattern above.
+      'pattern' => '^[a-z][a-z0-9\-]*',
+    ],
   ];
   // Add js which copies the machine name value to the original base field.
   $element['#attached']['library'][] = 'paragraphs_anchor/base';

@@ -4,6 +4,6 @@ description: 'Small module to allow admin to add id attribute to each paragraph.
 core: 8.x
 core_version_requirement: ^8 || ^9 || ^10
 package: 'Pixel Onion'
-# version: 0.3.0
+# version: 0.3.1
 dependencies:
   - 'drupal:paragraphs'
